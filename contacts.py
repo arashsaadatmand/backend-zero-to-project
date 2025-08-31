@@ -1,25 +1,43 @@
-contacts = [  ]
+from fastapi import FastAPI
+from pydantic import BaseModel
 
-def add_contact(name, phone):
-    contacts.append({'name': name, 'phone': phone})
+app = FastAPI()
 
-def list_contacts():
+contacts = []
+
+class Contact(BaseModel):
+    name: str
+    phone: str
+
+
+@app.get("/")
+def home():
+    return {"message": "Contacts API is running!"}
+
+
+@app.get("/contacts")
+def get_contacts():
+    return contacts
+
+
+@app.post("/contacts")
+def add_contact(contact: Contact):
+    contacts.append(contact.dict())
+    return {"message": "Contact added", "contact": contact}
+
+
+@app.get("/contacts/{name}")
+def search_contact(name: str):
     for c in contacts:
-        print(c["name"], ":", c["phone"])
-
-def search_contact(name):
-    for c in contacts:
-        if c["name"] == name:
+        if c["name"].lower() == name.lower():
             return c
-    return None
+    return {"error": "Contact not found"}
 
-add_contact("Arash", "09120000000")
-add_contact("Sara", "09350000000")
 
-list_contacts()
-
-result = search_contact("Sara")
-if result:
-    print("Found:", result)
-else:
-    print("Not found")
+@app.delete("/contacts/{name}")
+def delete_contact(name: str):
+    for c in contacts:
+        if c["name"].lower() == name.lower():
+            contacts.remove(c)
+            return {"message": f"Contact {name} deleted"}
+    return {"error": "Contact not found"}
