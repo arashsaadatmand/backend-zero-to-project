@@ -1,8 +1,5 @@
 from fastapi import FastAPI
+from contacts import router as contacts_router
 
 app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
+app.include_router(contacts_router)
